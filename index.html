@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Voltra — 轻量级跨平台 API 调试工具</title>
+<meta name="description" content="Voltra：Wails v3 + Go + Vue 3 构建的本地优先 API 调试工具。项目化接口管理、十种 Auth、WebSocket、11 语言代码生成，数据全部保存在本机，无需账号，离线可用。" />
+<link rel="icon" type="image/png" href="appicon.png" />
+<style>
+  :root {
+    --bg: #17181c;
+    --bg-elev: #1e1f24;
+    --bg-sunken: #131317;
+    --bg-hover: #26262f;
+    --border: #2c2d34;
+    --border-strong: #3a3b44;
+    --text: #e7e7ea;
+    --text-dim: #9a9ba4;
+    --text-faint: #6a6b74;
+    --brand: #8b7dff;
+    --brand-deep: #5b4ee0;
+    --ok: #3aa856;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --font: -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    --mono: 'SF Mono', 'JetBrains Mono', Consolas, 'Courier New', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--brand); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- nav ---------- */
+  nav {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(23, 24, 28, 0.82);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 56px; }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; color: var(--text); }
+  .logo img { width: 26px; height: 26px; border-radius: 6px; }
+  .nav-links { display: flex; align-items: center; gap: 22px; font-size: 14px; }
+  .nav-links a { color: var(--text-dim); }
+  .nav-links a:hover { color: var(--text); text-decoration: none; }
+  .btn {
+    display: inline-block; padding: 8px 18px; border-radius: var(--radius-sm);
+    font-size: 14px; font-weight: 600; cursor: pointer; border: 1px solid transparent;
+    transition: filter 0.15s ease, background 0.15s ease;
+  }
+  .btn-primary { background: var(--brand); color: #fff; }
+  .btn-primary:hover { filter: brightness(1.12); text-decoration: none; }
+  .btn-ghost { border-color: var(--border-strong); color: var(--text); background: transparent; }
+  .btn-ghost:hover { background: var(--bg-hover); text-decoration: none; }
+  .btn-sm { padding: 6px 14px; font-size: 13px; }
+
+  /* ---------- hero ---------- */
+  .hero { padding: 96px 0 72px; text-align: center; }
+  .hero .icon { width: 84px; height: 84px; border-radius: 20px; margin-bottom: 28px; box-shadow: 0 12px 48px rgba(139, 125, 255, 0.28); }
+  .hero h1 { font-size: 56px; letter-spacing: -1.5px; font-weight: 800; margin-bottom: 14px; }
+  .hero h1 .accent { background: linear-gradient(120deg, var(--brand), #c4bfff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .hero .tag { font-size: 20px; color: var(--text-dim); max-width: 640px; margin: 0 auto 12px; }
+  .hero .sub { font-size: 15px; color: var(--text-faint); max-width: 560px; margin: 0 auto 36px; }
+  .hero .cta { display: flex; gap: 14px; justify-content: center; margin-bottom: 44px; }
+  .hero .cta .btn { padding: 11px 26px; font-size: 15px; }
+  .stats { display: flex; justify-content: center; gap: 0; flex-wrap: wrap; }
+  .stat { padding: 0 28px; border-right: 1px solid var(--border); }
+  .stat:last-child { border-right: none; }
+  .stat b { display: block; font-size: 22px; font-weight: 700; color: var(--text); }
+  .stat span { font-size: 13px; color: var(--text-faint); }
+
+  /* ---------- sections ---------- */
+  section { padding: 72px 0; }
+  .sec-title { text-align: center; font-size: 32px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 10px; }
+  .sec-sub { text-align: center; color: var(--text-dim); font-size: 15px; margin-bottom: 48px; }
+
+  /* ---------- screenshots ---------- */
+  .shots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .shot {
+    border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+    background: var(--bg-elev); aspect-ratio: 16 / 10; display: flex;
+    align-items: center; justify-content: center; position: relative;
+  }
+  .shot img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+  .shot .ph {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    color: var(--text-faint); font-size: 13px; border: 1.5px dashed var(--border-strong);
+    border-radius: var(--radius-sm); padding: 18px 26px;
+  }
+  .shot .ph svg { opacity: 0.5; }
+  .shots-cap { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 10px; }
+  .shots-cap span { text-align: center; font-size: 13px; color: var(--text-faint); }
+
+  /* ---------- features ---------- */
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .card {
+    background: var(--bg-elev); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 22px; transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .card:hover { border-color: var(--border-strong); transform: translateY(-2px); }
+  .card .ic {
+    width: 38px; height: 38px; border-radius: 9px; margin-bottom: 14px;
+    background: rgba(139, 125, 255, 0.12); display: flex; align-items: center; justify-content: center;
+  }
+  .card .ic svg { stroke: var(--brand); }
+  .card h3 { font-size: 15.5px; font-weight: 650; margin-bottom: 6px; }
+  .card p { font-size: 13.5px; color: var(--text-dim); }
+
+  /* ---------- stack ---------- */
+  .stack { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .stack .card b { color: var(--brand); font-family: var(--mono); font-size: 13px; display: block; margin-bottom: 8px; }
+  .callout {
+    margin-top: 20px; border: 1px solid rgba(58, 168, 86, 0.35); background: rgba(58, 168, 86, 0.07);
+    border-radius: var(--radius); padding: 18px 22px; font-size: 14.5px; color: var(--text-dim);
+  }
+  .callout b { color: var(--ok); }
+
+  /* ---------- quick start ---------- */
+  .codebox {
+    background: var(--bg-sunken); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px 24px; font-family: var(--mono); font-size: 13.5px; line-height: 2;
+    overflow-x: auto; color: var(--text-dim);
+  }
+  .codebox .c { color: var(--text-faint); }
+  .codebox .p { color: var(--brand); }
+  .qs-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .qs-card { background: var(--bg-elev); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; }
+  .qs-card h3 { font-size: 15px; font-weight: 650; margin-bottom: 10px; }
+  .qs-card p { font-size: 13.5px; color: var(--text-dim); margin-bottom: 12px; }
+  .qs-card ul { list-style: none; font-size: 13.5px; color: var(--text-dim); }
+  .qs-card li { padding: 3px 0; }
+  .qs-card li::before { content: '·'; color: var(--brand); font-weight: 700; margin-right: 8px; }
+
+  /* ---------- footer ---------- */
+  footer { border-top: 1px solid var(--border); padding: 36px 0; text-align: center; color: var(--text-faint); font-size: 13px; }
+  footer .links { margin-bottom: 10px; display: flex; gap: 20px; justify-content: center; }
+  footer .links a { color: var(--text-dim); }
+
+  @media (max-width: 860px) {
+    .hero h1 { font-size: 40px; }
+    .shots, .shots-cap, .grid, .stack, .qs-cols { grid-template-columns: 1fr; }
+    .stat { padding: 8px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-inner">
+    <a class="logo" href="#top"><img src="appicon.png" alt="Voltra" />Voltra</a>
+    <div class="nav-links">
+      <a href="#features">功能</a>
+      <a href="#stack">技术栈</a>
+      <a href="#start">开始使用</a>
+      <a href="https://github.com/ramboLiang/voltra">GitHub</a>
+      <a class="btn btn-primary btn-sm" href="https://github.com/ramboLiang/voltra/releases">下载 v0.2.0</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <img class="icon" src="appicon.png" alt="Voltra" />
+    <h1><span class="accent">Voltra</span></h1>
+    <p class="tag">轻量级跨平台 API 接口调试工具 · 本地优先</p>
+    <p class="sub">Wails v3 + Go + Vue 3 构建的 Postman / Apifox 同类实现。项目化接口管理、十种 Auth、WebSocket、11 语言代码生成 —— 数据全部保存在本机，无需账号，离线可用。</p>
+    <div class="cta">
+      <a class="btn btn-primary" href="https://github.com/ramboLiang/voltra/releases">下载 v0.2.0</a>
+      <a class="btn btn-ghost" href="https://github.com/ramboLiang/voltra">在 GitHub 查看源码</a>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>10</b><span>Auth 类型（Go 侧签名）</span></div>
+      <div class="stat"><b>11 语言</b><span>代码生成 · 24 客户端</span></div>
+      <div class="stat"><b>6 种</b><span>请求 Body 格式</span></div>
+      <div class="stat"><b>0</b><span>账号 / 云端依赖</span></div>
+    </div>
+  </div>
+</header>
+
+<section id="shots">
+  <div class="wrap">
+    <h2 class="sec-title">界面一览</h2>
+    <p class="sec-sub">六区专业化布局 · 明 / 暗 / 跟随系统三主题 · 整页缩放 50–150%</p>
+    <div class="shots">
+      <div class="shot"><img src="main-dark.png" alt="主界面（暗色主题）" /></div>
+      <div class="shot"><img src="main-light.png" alt="主界面（浅色主题）" /></div>
+      <div class="shot"><img src="websocket.png" alt="WebSocket 调试" /></div>
+    </div>
+    <div class="shots-cap">
+      <span>请求 - 响应分栏 · 集合树 · 环境变量</span>
+      <span>三主题 · 设计令牌单源</span>
+      <span>收 / 发气泡时间线 · 自动重连心跳</span>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <h2 class="sec-title">功能</h2>
+    <p class="sec-sub">v0.2 已交付的全部能力</p>
+    <div class="grid">
+      <div class="card"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M3 12h18"/></svg></div><h3>六区专业化界面</h3><p>标题栏 / 活动栏 / 侧栏 / 标签区 / 主编辑区 / 状态栏；请求-响应分栏双向拖拽，明暗双主题，整页缩放 50–150%。</p></div>
+      <div class="card"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M3 7h6l2 3h10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/></svg></div><h3>项目化接口管理</h3><p>项目 → 集合 → 文件夹（无限层级）→ 接口；自研鼠标拖拽引擎排序 / 移入子目录，右键菜单、内联重命名、即时搜索。</p></div>
+      <div class="card"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M4 12h16M14 6l6 6-6 6"/></svg></div><h3>HTTP 请求</h3><p>7 种方法 + 自定义；form-data / urlencoded / raw（JSON·XML·HTML·Text）/ binary / graphql；URL 与 Query 双向同步、Header 补全。</p></div>
+      <div class="card"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div><h3>十种 Auth</h3><p>Bearer / Basic / API Key / OAuth 1.0a / OAuth 2.0 / Digest / AWS SigV4 / JWT 解码面板 / 继承；签名类由 Go 侧实现。</p></div>
+      <div class="card"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/><circle cx="12" cy="12" r="4"/></svg></div><h3>环境与变量</h3><p>全局 / 项目 / 环境 / 请求四层作用域；<code>{{变量}}</code> 全位置替换，未定义变量高亮告警，secret 类型区分。</p></div>
+      <div class="card"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 21h16"/></svg></div><h3>响应查看 · 发送并下载</h3><p>Pretty / Raw / Preview、JSONPath 过滤、Set-Cookie 解析；一键发送并流式下载到本地，大文件不进内存。</p></div>
+      <div class="card"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M8 12h8M12 8v8M2.5 12a9.5 9.5 0 0 1 19 0 9.5 9.5 0 0 1-19 0Z" transform="scale(0.9) translate(1.3,1.3)"/></svg></div><h3>WebSocket</h3><p>WS/WSS 连接入树，收 / 发气泡时间线，JSON 自动格式化、二进制 hex 摘要，自动重连 / 心跳。</p></div>
+      <div class="card"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div><h3>历史记录</h3><p>每次发送自动记录，日期分组、搜索、一键还原为新标签、另存为接口、清空 / 上限。</p></div>
+      <div class="card"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M13 5l-2 14"/></svg></div><h3>11 语言代码生成</h3><p>cURL / HTTPie / wget、Python、JS、Node、Java、PHP、Go、C#、Ruby、Swift、Kotlin；变量原样 / 真实值双模式。</p></div>
+      <div class="card"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></div><h3>导入 / 导出</h3><p>Postman Collection v2.1 与 Environment 导入导出（含预览报告）、cURL 粘贴解析、项目 JSON 导出。</p></div>
+      <div class="card"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg></div><h3>持久化</h3><p>重启恢复全部工作现场；数据文件损坏自动隔离不崩；设置页可打开数据目录、导出完整备份。</p></div>
+      <div class="card"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 2 4 6v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V6l-8-4Z"/></svg></div><h3>本地优先</h3><p>数据只写本机标准配置目录，无账号、无云端、无遥测；接口与密钥不出你的机器。</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="stack">
+  <div class="wrap">
+    <h2 class="sec-title">技术栈</h2>
+    <p class="sec-sub">真原生壳 + 高性能网络层 + 现代前端</p>
+    <div class="stack">
+      <div class="card"><b>Wails v3</b><p>Go 写的桌面框架，编译为单文件原生应用：macOS / Windows / Linux 一套代码，无 Electron 的内存与体积负担。</p></div>
+      <div class="card"><b>Go</b><p>网络层与签名引擎全部在 Go 侧：ctx 取消、耗时分段采集、Digest / OAuth 1.0a / AWS SigV4 签名、流式下载直落盘。</p></div>
+      <div class="card"><b>Vue 3 + CodeMirror 6</b><p>组合式 API + 模块级 reactive store；CodeMirror 6 提供 JSON / XML / HTML / Text 高亮编辑与设计令牌驱动的三主题。</p></div>
+    </div>
+    <div class="callout"><b>本地优先，</b>不是"本地缓存"。Voltra 没有注册、登录、同步、云端工作区 —— 你的接口定义、环境和密钥始终只是你磁盘上的几个 JSON 文件，想用 Git 管版本就自己管。</div>
+  </div>
+</section>
+
+<section id="start">
+  <div class="wrap">
+    <h2 class="sec-title">开始使用</h2>
+    <p class="sec-sub">下载即用，或从源码构建</p>
+    <div class="qs-cols">
+      <div class="qs-card">
+        <h3>预构建包</h3>
+        <p>前往 Releases 下载（当前提供 macOS 构建，x86_64，Apple Silicon 经 Rosetta 2 运行）：</p>
+        <ul>
+          <li><a href="https://github.com/ramboLiang/voltra/releases">GitHub Releases</a></li>
+          <li><a href="https://gitee.com/liangyibo/voltra/releases">Gitee Releases</a></li>
+        </ul>
+      </div>
+      <div class="qs-card">
+        <h3>从源码构建</h3>
+        <p>需要 Go 1.25+、Node 18+、wails3 CLI：</p>
+        <ul>
+          <li><code>go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-beta.3</code></li>
+          <li><code>cd frontend && npm install && cd ..</code></li>
+          <li><code>task dev</code> 开发模式 · <code>task build</code> 生产构建</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="links">
+      <a href="https://github.com/ramboLiang/voltra">GitHub</a>
+      <a href="https://gitee.com/liangyibo/voltra">Gitee</a>
+      <a href="https://github.com/ramboLiang/voltra/releases">Releases</a>
+      <a href="https://github.com/ramboLiang/voltra/blob/main/LICENSE">MIT License</a>
+    </div>
+    © 2026 ramboLiang · Voltra · 数据仅存本机，无需账号，离线可用
+  </div>
+</footer>
+
+</body>
+</html>
