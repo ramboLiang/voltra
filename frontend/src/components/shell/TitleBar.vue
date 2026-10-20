@@ -34,13 +34,19 @@ import { flushAll } from '../../lib/persist'
 import { t } from '../../locales/zh-CN'
 
 const L = computed(() => t())
+const duplicateProjectName = computed(() => {
+  const n = newProjectName.value.trim()
+  return !!n && workspace.projects.some((p) => p.name.trim() === n)
+})
 
 // 新建项目
 const showNewProject = ref(false)
 const newProjectName = ref('')
+// 新建项目：已有同名项目时不开第二个（否则项目下拉里两个同名项，只能靠 id 区分）
 function confirmNewProject() {
   const name = newProjectName.value.trim()
   if (!name) return
+  if (workspace.projects.some((p) => p.name.trim() === name)) return
   const p = addProject(name)
   setCurrentProject(p.id)
   showNewProject.value = false
@@ -336,11 +342,15 @@ async function onClose() {
         :placeholder="L.dialog.projectNewPlaceholder"
         autofocus
         @keyup.enter="confirmNewProject"
+        @keyup.esc="showNewProject = false"
         style="width: 100%"
       />
+      <div v-if="duplicateProjectName" class="dup-warn">
+        {{ L.dialog.projectNameExists ?? '已有同名项目，请换一个名称' }}
+      </div>
       <template #footer>
         <button class="btn" @click="showNewProject = false">{{ L.common.cancel }}</button>
-        <button class="btn btn-primary" :disabled="!newProjectName.trim()" @click="confirmNewProject">
+        <button class="btn btn-primary" :disabled="!newProjectName.trim() || duplicateProjectName" @click="confirmNewProject">
           {{ L.common.confirm }}
         </button>
       </template>
@@ -586,6 +596,11 @@ async function onClose() {
 .win-btn:hover {
   background: var(--bg-hover);
   color: var(--text);
+}
+.dup-warn {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--warn);
 }
 .win-close:hover {
   background: var(--error);

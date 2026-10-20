@@ -9,8 +9,9 @@ import type {
   Request,
   TreeNode,
 } from '../types/models'
-import { newProject, newCollection, newFolder, newRequest, uid, cloneDeep } from '../types/models'
+import { newProject, newCollection, newFolder, newRequest, newRequestSettings, uid, cloneDeep } from '../types/models'
 import { scheduleSave } from '../lib/persist'
+import { settings } from './settings'
 
 export const workspace = reactive({
   projects: [] as Project[],
@@ -179,7 +180,12 @@ export function addFolder(parent: Collection | Folder, name: string): Folder {
 
 /** 在集合或文件夹下新增请求 */
 export function addRequest(parent: Collection | Folder, partial?: Partial<Request>): Request {
-  const r = newRequest({ name: partial?.protocol === 'ws' ? '新建 WebSocket' : '新建请求', ...partial })
+  // 新建请求的超时取「设置 → 默认超时」（newRequestSettings 只在 models 内默认 30000）
+  const r = newRequest({
+    name: partial?.protocol === 'ws' ? '新建 WebSocket' : '新建请求',
+    settings: newRequestSettings(settings.defaultTimeoutMs),
+    ...partial,
+  })
   parent.items.push(r)
   touchCurrent()
   return r
@@ -208,7 +214,7 @@ export function removeNode(id: ID) {
   scheduleSave('projects')
 }
 
-/** 深拷贝节点（新 id），插到原节点之后 */
+/** 深拷贝节点（新 id），插到原节点之后；名字加「副本」后缀（否则树里两个同名行分不清） */
 export function duplicateNode(id: ID): TreeNode | null {
   const p = currentProject.value
   if (!p) return null
@@ -217,6 +223,7 @@ export function duplicateNode(id: ID): TreeNode | null {
   const i = items.findIndex((n) => n.id === id)
   if (i < 0) return null
   const copy = cloneNodeWithNewIds(items[i])
+  copy.name = items[i].name + ' 副本'
   items.splice(i + 1, 0, copy)
   touch(p)
   scheduleSave('projects')
@@ -236,7 +243,6 @@ function cloneNodeWithNewIds(n: TreeNode): TreeNode {
     return {
       ...x,
       id: uid(),
-      name: x.name + ' 副本',
       params: x.params.map((kv) => ({ ...kv })),
       headers: x.headers.map((kv) => ({ ...kv })),
       body: {

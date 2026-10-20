@@ -9,6 +9,7 @@ import PromptDialog from '../common/PromptDialog.vue'
 import {
   env,
   currentEnv,
+  setCurrentEnv,
   addEnvToProject,
   renameEnv,
   removeEnvFromProject,
@@ -62,11 +63,18 @@ function endRename() {
 }
 
 function onRemoveEnv() {
-  if (currentEnv.value) removeEnvFromProject(currentEnv.value.id)
+  if (currentEnv.value) envToDelete.value = currentEnv.value.id
 }
 
 // ---------- Postman 环境导入 / 导出 ----------
 const envError = ref<string | null>(null)
+// 删除环境需确认（不可恢复：环境里的变量一起没）
+const envToDelete = ref<string | null>(null)
+function doRemoveEnv() {
+  const id = envToDelete.value
+  envToDelete.value = null
+  if (id) removeEnvFromProject(id)
+}
 
 async function onImportEnv() {
   const pr = p.value
@@ -153,7 +161,7 @@ async function onExportEnv() {
 
       <!-- 环境下拉（切换） -->
       <div class="ep-select">
-        <select class="input ep-select-el" :value="env.currentEnvId ?? ''" @change="env.currentEnvId = ($event.target as HTMLSelectElement).value || null">
+        <select class="input ep-select-el" :value="env.currentEnvId ?? ''" @change="setCurrentEnv(($event.target as HTMLSelectElement).value || null)">
           <option value="">{{ L.env.noEnv }}</option>
           <option v-for="e in p.environments" :key="e.id" :value="e.id">{{ e.name }}</option>
         </select>
@@ -178,6 +186,15 @@ async function onExportEnv() {
         :message="envError"
         @confirm="envError = null"
         @cancel="envError = null"
+      />
+
+      <ConfirmDialog
+        v-if="envToDelete"
+        :title="L.common.confirmDelete"
+        :message="L.dialog.envDeleteConfirm"
+        :danger="true"
+        @confirm="doRemoveEnv"
+        @cancel="envToDelete = null"
       />
 
       <PromptDialog

@@ -1,16 +1,21 @@
 <script setup lang="ts">
 // 通用模态框：默认 footer 插槽 + 标题；Esc / 点遮罩关闭
+// Esc 必须监听 window：模态层不抢焦点（遮罩上的 keydown 只有聚焦到它才会触发，实际永远不触发）
+import { onMounted, onBeforeUnmount } from 'vue'
+
 defineProps<{ title?: string; width?: number }>()
 const emit = defineEmits<{ (e: 'close'): void }>()
 
 function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape') emit('close')
 }
+onMounted(() => window.addEventListener('keydown', onKeydown))
+onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 </script>
 
 <template>
   <Teleport to="body">
-    <div class="modal-mask" @pointerdown.self="emit('close')" @keydown="onKeydown" tabindex="-1">
+    <div class="modal-mask" @pointerdown.self="emit('close')">
       <div class="modal" :style="{ width: width ? width + 'px' : '380px' }" @pointerdown.stop>
         <div class="modal-title">
           <span v-if="title">{{ title }}</span>

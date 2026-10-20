@@ -143,6 +143,10 @@ function commitRenameColl(c: Collection) {
   const v = renameCollText.value.trim()
   if (v && v !== c.name) renameCollection(c.id, v)
 }
+function cancelRenameColl() {
+  // 先置 null 屏蔽随后的 blur 提交（Esc 才能真正取消）
+  renamingCollId.value = null
+}
 
 // ---------- 集合拖拽排序（鼠标拖拽，主循环见 dnd-state.ts，集合↔集合） ----------
 
@@ -379,7 +383,7 @@ async function onExportProject() {
               @click.stop
               @blur="commitRenameColl(c)"
               @keyup.enter="commitRenameColl(c)"
-              @keyup.esc="renamingCollId = null"
+              @keyup.esc="cancelRenameColl()"
             />
             <span
               v-else

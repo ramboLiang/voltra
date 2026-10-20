@@ -395,6 +395,7 @@ export const zhCN = {
     projectNew: '新建项目',
     projectNewPlaceholder: '项目名称',
     projectRename: '重命名项目',
+    projectNameExists: '已有同名项目，请换一个名称',
     projectDeleteConfirm: '删除项目将同时删除其中的所有接口、环境和变量，确定删除吗？',
     importPreview: '导入预览',
     importSkipped: '项已跳过',

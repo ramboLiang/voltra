@@ -60,6 +60,7 @@ function commitRename() {
   emit('rename-done')
 }
 function cancelRename() {
+  // 必须先置 false：否则随后触发的 blur 会走 commitRename 把已取消的名字提交（Esc 实际不生效）
   renaming.value = false
   emit('rename-done')
 }
@@ -164,6 +165,7 @@ function setRowEl(el: unknown) {
         @blur="commitRename"
         @keyup.enter="commitRename"
         @keyup.esc.stop="cancelRename"
+        @keydown.esc.stop.prevent
       />
     </template>
     <template v-else>
